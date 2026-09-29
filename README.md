@@ -11,47 +11,23 @@ Unity **6000.3.7f1**, Built-in Render Pipeline, legacy Input Manager.
 
 **Goal:** Navigate the maze to the red pressure plate (top-left corner). Stepping on it sinks the orange door on the south wall of the start hall. Then push the brown crate from the start hall, through the doorway, and into the green DepositZone in the room below. The elapsed time is logged to the Console.
 
-## Scripts
-| Script | On | Role |
-|---|---|---|
-| `PlayerController.cs` | Actor | Reads WASD in `Update`, applies `AddForce` in `FixedUpdate`, with a soft speed cap |
-| `Payload.cs` | Crate | Marker component so only the crate can complete the level |
-| `PressurePlate.cs` | Plate (trigger) | Sensor: when the Actor enters, tells the LevelManager to remove the roadblock |
-| `Roadblock.cs` | Door | Kinematic Rigidbody that sinks with `MovePosition` in `FixedUpdate`, then disables itself |
-| `DepositZone.cs` | Goal (trigger) | Counts only if: it's the Payload, the door is open, the crate entered after unlock, and its center is inside |
-| `LevelManager.cs` | Empty object | Level state, logs, timer, on-screen HUD, R to restart |
-| `CameraFollow.cs` | Main Camera | Smooth follow of the Actor in `LateUpdate` |
-| `Editor/MazeSceneBuilder.cs` | (editor) | **Tools → Build Maze Chamber Scene** builds the scene from an ASCII maze layout |
-
-## Physics tuning (intentionally different)
-| Object | Mass | Linear damping | Friction (dyn / static, combine) |
-|---|---|---|---|
-| Actor | 2 | 0.5 | 0.1 / 0.1, Minimum |
-| Crate (1.8 m cube) | 3 | 0.8 | 0.25 / 0.3, Average |
-| Floor | n/a | n/a | 0.5 / 0.6, Average |
-| Walls / Door | n/a | n/a | 0 / 0, Minimum |
-
-## Logs
-- `[PressurePlate] Sensor triggered by the Actor.`
-- `[LevelManager] Roadblock removed at X.XXs. The door is open!`
-- `[DepositZone] Payload entered before the roadblock was removed. Does not count.` (if attempted)
-- `[LevelManager] SUCCESS! Payload deposited. Elapsed time from Play: X.XX seconds.`
-
 ## AI usage
-The C# scripts in `Assets/Scripts/` and `Assets/Editor/` were written with the help of Claude (Anthropic) via Claude Code; each file says so in a header comment. I set up the project, ran and tested the scene, tuned the physics values, and can explain how every script works. **The reflection below is my own writing, done without AI.**
+The C# scripts in `Assets/Scripts/` and `Assets/Editor/` were written with the help of Claude (Anthropic) via Claude Code; each file says so in a header comment. I set up the project, ran and tested the scene, made some meaningful design changes, tuned the physics values, and can explain how every script works. **The reflection below is my own writing, done without AI.**
 
 ---
 
 ## Reflection
 
 ### 1. What must be true (physically and in script state) for a run to count as success? One way to cheat, and does the design block it?
-_TODO_
+Ans) For physical conditions, the player must push the box in the center of the zone. Having just an edge overlap is not enough. In the script, RoadblockRemoved == true must be set to let the player pass through the door. This is achieved when the player triggers the pressure plate.
+
+One way to cheat would be to directly push the box on the Deposit Zone. However, the design of the door ensures the player or the crate cannot pass through it without triggering the pressure plate first.
 
 ### 2. One unexpected behavior while building: what caused it, and what did you change?
-_TODO_
+Ans) The crate felt tedious to push in the beginning when I did not optimize any of its rigidbody property. I figured just lowering the value of mass does not solve the problem. The ideal and least frustrating way to move the box was achieved after several rounds of tuning. I understood that having different values of mass, friction and damping create very different interactions with something as simple as pushing a box.
 
 ### 3. One design decision: what did you optimize for, and what did you give up?
-_TODO_
+Ans) I optimized the crate's mass, friction and damping to make it less frustrating to push it. I also increased its size just to make convenient to push. The trade-off probably is realism. It may not feel like an actual crate anymore but I believe this is less important compared to the convenience of completing the maze quicker.
 
 ### 4. Weakest part of the system right now: what would you change first, and why?
-_TODO_
+Ans) I think the weakest part of the system right now is the lack of an option to reset the position of the crate. If the player pushes the crate to a corner, the game essentially gets softlocked and there is no other way to get out of it except by resetting. I would change this because it may feel annoying to players. Maybe an undo button would help. However, the scope of what is undone is another task in itself which is why it is not addressed in this system.
