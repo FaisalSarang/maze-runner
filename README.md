@@ -19,7 +19,7 @@ The C# scripts in `Assets/Scripts/` and `Assets/Editor/` were written with the h
 ## Reflection
 
 ### 1. What must be true (physically and in script state) for a run to count as success? One way to cheat, and does the design block it?
-Ans) For physical conditions, the player must push the box in the center of the zone. Having just an edge overlap is not enough. In the script, this box must has a Payload so that the Actor does not count. But to get to the zone, the player has to unlock a door which physically blocks the only path possible. In the script, "RoadblockRemoved == true" must be set to let the player pass through the door. This is achieved when the player triggers the pressure plate.
+Ans) For physical conditions, the player must push the box in the center of the zone. Having just an edge overlap is not enough. In the script, this box must have a Payload so that the Actor does not count. But to get to the zone, the player has to unlock a door which physically blocks the only path possible. In the script, "RoadblockRemoved == true" must be set to let the player pass through the door. This is achieved when the player triggers the pressure plate.
 
 One way to cheat would be to directly push the box on the Deposit Zone. However, the design of the door ensures the player or the crate cannot pass through it without triggering the pressure plate first.
 
